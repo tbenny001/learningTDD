@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tutorial | <%= title %></title>
+  </head>
+  <body>
+    <% if(!isAuthenticated) { %>
+      <a href="/login">Login here</a>
+      <a href="/register">Register here</a>
+    <% } else { %>
+      Hello, <%= user.name %>!
+    <% } %>
+  </body>
+</html>
