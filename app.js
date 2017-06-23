@@ -3,19 +3,17 @@ var bcrypt = require('bcryptjs');
 var bodyParser = require('body-parser');
 var sessions = require('client-sessions');
 var mongoose = require('mongoose');
-
+var User = require('./models/User');
 var port = 1337;
 var app = express();
 
-var Schema = mongoose.Schema;
-var ObjectId = Schema.ObjectId;
-var User = mongoose.model('User', new Schema({
-  id: ObjectId,
-  username: { type: String, unique: true},
-  password: String,
-  email: { type: String, unique: true}
-}));
-mongoose.connect('mongodb://localhost/auth');
+var DB_ENVS = {production: 'auth', test: 'test', development: 'dev'}
+var ENV_PORTS = {production: '1337', test: '1338', development: '1339'}
+// read environmnet variable to determine environment
+// env = ENV["environment"]
+var env = process.env.NODE_ENV || 'development'
+var port = ENV_PORTS[env]
+mongoose.connect('mongodb://localhost/' + DB_ENVS[env]);
 
 app.set('view engine', 'ejs');
 
@@ -35,34 +33,29 @@ app.get('/', function(req, res) {
   });
 });
 
+// var route = function(method, url, controller, action) {
+//   app[method](url, function(req, res) {
+//     controller[action](req, res)
+//   })
+// }
+//
+// var get = function(url, controller, action) {
+//   route('get', url, controller, action)
+// }
+//
+// var post = function(url, controller, action) {
+//   route('post', url, controller, action)
+// }
+//
+// //get('/register', users, 'register')
+
 app.get('/register', function(req, res) {
   res.render('register');
-})
+});
 
 app.post('/register', function(req, res) {
-  var hashedPassword = bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10));
-  var newUser = new User({
-    username: req.body.username,
-    password: hashedPassword,
-    email: req.body.emai
-  });
-
-  newUser.save(function(err) {
-    if(err) {
-      var error = "Error. Please try again."
-      if(err.code === 11000) {
-        var error = "That username/email is already taken. Please try again.";
-        console.log(error);
-      }
-      console.log(error);
-      res.render('register.ejs', {
-        title: 'Sign up'
-      });
-    } else {
-      res.redirect('dashboard');
-    }
-  });
-});
+  User.register()
+})
 
 app.get('/login', function(req, res) {
   res.render('login', {
@@ -114,6 +107,6 @@ app.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
-app.listen(port, function() {
+module.exports = app.listen(port, function() {
   console.log('Server listening on port ' + port + '...');
 });
