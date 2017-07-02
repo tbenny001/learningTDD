@@ -8,4 +8,5 @@ var User = mongoose.model('User', new Schema({
   password: String,
   email: { type: String, unique: true}
 }));
+
 module.exports = User
